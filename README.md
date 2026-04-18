@@ -8,7 +8,7 @@ Implementação em ASP.NET Core Web API com contratos JSON mantidos, baseada na 
 - Envio de resposta em JSON
 - Verificação rápida de disponibilidade da API
 - Mensagens previstas:
-  - "Username/Password incorreto/s"
+  - "Username/Password incorreto(s)"
   - "Login efetuado com sucesso!"
   - "Base de dados inoperacional"
 
@@ -76,7 +76,7 @@ dotnet run
 
 Num terminal separado, executar os comandos abaixo.
 
-> **Nota Windows (PowerShell):** substituir as aspas simples por aspas duplas com escape, por exemplo `-d "{\"username\":\"admin\",\"password\":\"1234\"}"`.
+> **Nota Windows (PowerShell):** substituir as aspas simples por aspas duplas com escape(barra invertida), por exemplo `-d "{\"username\":\"admin\",\"password\":\"1234\"}"`.
 
 ---
 
@@ -200,7 +200,7 @@ Controller --> Cliente : HTTP 200 + "pong"
 
 note right of Controller
 503 representa indisponibilidade do ator externo.
-200 representa ator externo disponível,\nmesmo com erro de negócio (ex: credenciais inválidas).
+200 representa ator externo disponível, mesmo com erro de negócio (ex: credenciais inválidas).
 end note
 
 @enduml
