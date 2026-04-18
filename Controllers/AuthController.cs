@@ -23,10 +23,11 @@ public sealed class AuthController : ControllerBase
     [HttpPost("login")]
     [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status503ServiceUnavailable)]
-    public ActionResult<LoginResponse> Login([FromBody] LoginRequest request)
+    public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request)
     {
-        var resposta = model.Autenticar(request);
+        var resposta = await model.AutenticarAsync(request);
 
+        // 503 reflete indisponibilidade do ator externo, nao logica de negocio interna.
         if (resposta.Code == "DB_OFFLINE")
         {
             return StatusCode(StatusCodes.Status503ServiceUnavailable, resposta);

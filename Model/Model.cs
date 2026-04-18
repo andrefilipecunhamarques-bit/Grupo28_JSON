@@ -1,47 +1,36 @@
+using Grupo28_JSON.Services;
+
 namespace Grupo28_JSON;
 
+// O Model coordena o fluxo: valida o pedido e delega a autenticacao
+// ao ator externo via IExternalAuthClient.
+// Se o ator externo nao responder (HttpRequestException), sinaliza DB_OFFLINE.
 public sealed class Model
 {
-    private readonly Dictionary<string, string> baseDadosUtilizadores;
+    private readonly IExternalAuthClient _authClient;
 
-    public Model()
+    public Model(IExternalAuthClient authClient)
     {
-        baseDadosUtilizadores = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["admin"] = "1234",
-            ["equipa28"] = "json"
-        };
+        _authClient = authClient;
     }
 
-    public LoginResponse Autenticar(LoginRequest? pedido)
+    public async Task<LoginResponse> AutenticarAsync(LoginRequest? pedido)
     {
         if (pedido is null)
         {
             return CriarErro("INVALID_REQUEST", "Pedido JSON inválido.");
         }
 
-        if (pedido.Username.Equals("db_offline", StringComparison.OrdinalIgnoreCase))
+        try
         {
+            // Output para o ator externo; aguarda o input (resposta) dele.
+            return await _authClient.AutenticarAsync(pedido);
+        }
+        catch (HttpRequestException)
+        {
+            // O ator externo estava incontactavel.
             return CriarErro("DB_OFFLINE", "Base de dados inoperacional");
         }
-
-        if (ValidarCredenciais(pedido.Username, pedido.Password))
-        {
-            return new LoginResponse
-            {
-                Success = true,
-                Code = "OK",
-                Message = "Login efetuado com sucesso!"
-            };
-        }
-
-        return CriarErro("INVALID_CREDENTIALS", "Username/Password incorreto/s");
-    }
-
-    private bool ValidarCredenciais(string username, string password)
-    {
-        return baseDadosUtilizadores.TryGetValue(username, out var passwordGuardada)
-               && passwordGuardada == password;
     }
 
     private static LoginResponse CriarErro(string code, string message)
