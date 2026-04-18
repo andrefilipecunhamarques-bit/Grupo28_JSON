@@ -6,6 +6,8 @@ builder.Services
     .AddControllers()
     .AddNewtonsoftJson();
 
+builder.Services.AddSingleton<Model>();
+
 var app = builder.Build();
 
 app.MapControllers();
