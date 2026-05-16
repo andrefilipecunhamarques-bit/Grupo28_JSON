@@ -40,6 +40,7 @@ end
 
 @enduml
 ```
+<img src="docs/login.png" alt="Fluxo de autenticação" width="700" />
 
 ### 2) Register Flow
 
@@ -85,6 +86,7 @@ end
 
 @enduml
 ```
+<img src="docs/register.png" alt="Fluxo de autenticação" width="700" />
 
 ### 3) Protected Route + Logout Flow
 
@@ -117,6 +119,7 @@ Home -> Router : navigate('/login')
 
 @enduml
 ```
+<img src="docs/logout.png" alt="Fluxo de autenticação" width="700" />
 
 ### 4) Health Check
 
@@ -132,3 +135,5 @@ Controller --> Client : HTTP 200 + "pong"
 
 @enduml
 ```
+
+<img src="docs/ping.png" alt="Fluxo de autenticação" width="700" />
