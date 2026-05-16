@@ -1,209 +1,129 @@
 # GRUPO28_JSON
 
-Implementação em ASP.NET Core Web API com contratos JSON mantidos, baseada na lógica do PDF "Arquitetura preliminar API JSON".
+Projeto académico com frontend Angular e backend ASP.NET Core para autenticação básica.
 
-## Requisitos funcionais cobertos
+## Estrutura atual
 
-- Receção de JSON com credenciais de login
-- Envio de resposta em JSON
-- Verificação rápida de disponibilidade da API
-- Mensagens previstas:
-  - "Username/Password incorreto(s)"
-  - "Login efetuado com sucesso!"
-  - "Base de dados inoperacional"
+- [api](api): Web API em .NET 8
+- [client](client): frontend Angular + Angular Material
 
-## Tecnologia JSON
+## Funcionalidades
 
-- Newtonsoft.Json
+- Registo de utilizador
+- Login
+- Logout no frontend
+- Página protegida para utilizador autenticado
+- Health check da API
 
-## Endpoints
+## Persistência
+
+- Utilizadores guardados em [api/users.txt](api/users.txt)
+- Passwords guardadas com hash BCrypt
+- O ficheiro [api/users.txt](api/users.txt) não é versionado
+
+## Endpoints da API
 
 - GET /api/auth/ping
-  - Retorna HTTP 200 com o texto `pong`.
+  - Retorna 200 com "pong"
 - POST /api/auth/login
-  - Recebe credenciais e retorna o resultado da autenticação.
+  - Retorna 200 com LoginResponse
+- POST /api/auth/register
+  - Retorna 201 quando cria
+  - Retorna 409 se username já existir
+  - Retorna 400 para payload inválido
 
-### Contrato de pedido (JSON)
+### Exemplo de login
+
+Request:
 
 ```json
 {
-  "username": "admin",
-  "password": "1234"
+  "username": "john",
+  "password": "123456"
 }
 ```
 
-### Contrato de resposta (JSON)
+Response (sucesso):
 
 ```json
 {
   "success": true,
-  "message": "Login efetuado com sucesso!",
+  "message": "Login successful.",
   "code": "OK"
 }
 ```
 
-## Regras de autenticação
+## Executar localmente
 
-- Sucesso:
-  - username: admin
-  - password: 1234
-- Credenciais inválidas:
-  - qualquer combinação diferente
-- Base de dados inoperacional (simulação):
-  - username: db_offline
-  - password: qualquer
-  - retorna HTTP 503
+Pré-requisitos:
 
-## Como executar
+- .NET SDK 8+
+- Node.js 18+
+- Angular CLI (opcional, pode usar npx)
+
+Backend:
 
 ```bash
+cd api
 dotnet restore
 dotnet run
 ```
 
-Por omissão, a API fica disponível em:
-
-- http://localhost:5000
-- https://localhost:5001
-
-## Testes manuais
-
-Iniciar a aplicação num terminal:
+Frontend:
 
 ```bash
-dotnet run
+cd client
+npm install
+npm start
 ```
 
-Num terminal separado, executar os comandos abaixo.
+URLs padrão:
 
-> **Nota Windows (PowerShell):** substituir as aspas simples por aspas duplas com escape(barra invertida), por exemplo `-d "{\"username\":\"admin\",\"password\":\"1234\"}"`.
+- API: http://localhost:5000
+- Frontend: http://localhost:4200
 
----
+## Configuração por ambiente
 
-### 1. Ping — verificar se a API está disponível
+### Backend (.NET)
+
+Config base em [api/appsettings.json](api/appsettings.json):
+
+- Urls
+- Cors:AllowedOrigins
+
+Também pode ser sobrescrito com variáveis de ambiente.
+
+Exemplos:
 
 ```bash
-curl -i http://localhost:5000/api/auth/ping
+ASPNETCORE_URLS=http://localhost:5000
+Cors__AllowedOrigins__0=http://localhost:4200
+Cors__AllowedOrigins__1=https://app.exemplo.com
 ```
 
-Resposta esperada:
+### Frontend (Angular)
 
-```
-HTTP/1.1 200 OK
-pong
-```
-
----
-
-### 2. Login com sucesso
-
-```bash
-curl -X POST http://localhost:5000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"1234"}'
-```
-
-Resposta esperada (`HTTP 200`):
+Config runtime em [client/src/assets/app-config.json](client/src/assets/app-config.json):
 
 ```json
-{"success":true,"message":"Login efetuado com sucesso!","code":"OK"}
+{
+  "apiUrl": "http://localhost:5000/api"
+}
 ```
 
----
+Vantagem: pode alterar URL da API sem rebuild do frontend.
 
-### 3. Credenciais inválidas
+## Principais ficheiros
 
-```bash
-curl -X POST http://localhost:5000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"errado"}'
-```
+- [api/Program.cs](api/Program.cs): bootstrap da API, CORS e DI
+- [api/Controllers/AuthController.cs](api/Controllers/AuthController.cs): endpoints
+- [api/Model/Model.cs](api/Model/Model.cs): regras de autenticação e registo
+- [api/Services/FileUserRepository.cs](api/Services/FileUserRepository.cs): leitura/escrita de users.txt
+- [client/src/app/services/auth.service.ts](client/src/app/services/auth.service.ts): chamadas HTTP de auth
+- [client/src/app/guards/auth.guard.ts](client/src/app/guards/auth.guard.ts): proteção de rota
 
-Resposta esperada (`HTTP 200`):
+## Observações
 
-```json
-{"success":false,"message":"Username/Password incorreto/s","code":"INVALID_CREDENTIALS"}
-```
-
----
-
-### 4. Ator externo inoperacional (HTTP 503)
-
-Antes de arrancar a aplicação, editar `appsettings.json` e colocar:
-
-```json
-"SimulateOffline": true
-```
-
-Iniciar a aplicação e fazer qualquer pedido de login:
-
-```bash
-curl -i -X POST http://localhost:5000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"1234"}'
-```
-
-Resposta esperada (`HTTP 503`):
-
-```json
-{"success":false,"message":"Base de dados inoperacional","code":"DB_OFFLINE"}
-```
-
-Repor `"SimulateOffline": false` para voltar ao modo normal.
-
-## Fluxo UML (PlantUML)
-
-Copiar o bloco abaixo para o site https://plantuml.com/ para visualizar o diagrama.
-
-```plantuml
-@startuml
-title Fluxo de Autenticação (ator externo via HTTP)
-
-actor Cliente
-participant "AuthController" as Controller
-participant "Model" as Model
-participant "IExternalAuthClient\n(ExternalAuthClient/Stub)" as ExtClient
-participant "Ator Externo\n(Auth Service)" as External
-
-Cliente -> Controller : POST /api/auth/login (LoginRequest)
-Controller -> Model : AutenticarAsync(request)
-
-alt Pedido inválido (request == null)
-  Model --> Controller : LoginResponse{code=INVALID_REQUEST}
-  Controller --> Cliente : HTTP 200 + JSON (erro de negócio)
-else Pedido válido
-  Model -> ExtClient : AutenticarAsync(request)
-
-  alt Ator externo responde
-    ExtClient -> External : HTTP POST /login (output)
-    External --> ExtClient : HTTP 200 + LoginResponse (input)
-    ExtClient --> Model : LoginResponse
-
-    alt Credenciais corretas
-      Model --> Controller : code=OK
-      Controller --> Cliente : HTTP 200 + JSON
-    else Credenciais incorretas
-      Model --> Controller : code=INVALID_CREDENTIALS
-      Controller --> Cliente : HTTP 200 + JSON
-    end
-
-  else Ator externo incontactável
-    ExtClient --> Model : throw HttpRequestException
-    Model --> Controller : LoginResponse{code=DB_OFFLINE}
-    Controller --> Cliente : HTTP 503 + JSON
-  end
-end
-
-== Health Check ==
-Cliente -> Controller : GET /api/auth/ping
-Controller --> Cliente : HTTP 200 + "pong"
-
-note right of Controller
-503 representa indisponibilidade do ator externo.
-200 representa ator externo disponível, mesmo com erro de negócio (ex: credenciais inválidas).
-end note
-
-@enduml
-```
-
-<img src="docs/fluxo.png" alt="Fluxo de autenticação" width="700" />
+- Este projeto foi feito para estudo/faculdade
+- Não usa JWT ou sessão persistente no browser
+- O estado de login do frontend está em memória
