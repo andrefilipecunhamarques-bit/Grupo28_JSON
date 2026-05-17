@@ -21,7 +21,10 @@ builder.Services.AddCors(options =>
 });
 
 var usersFilePath = Path.Combine(builder.Environment.ContentRootPath, "users.txt");
-builder.Services.AddSingleton<IUserRepository>(new FileUserRepository(usersFilePath));
+builder.Services.AddSingleton<IUserRepository>(sp =>
+    new FileUserRepository(
+        usersFilePath,
+        sp.GetRequiredService<ILogger<FileUserRepository>>()));
 builder.Services.AddScoped<Model>();
 
 var app = builder.Build();
