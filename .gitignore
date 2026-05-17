@@ -2,6 +2,19 @@
 bin/
 obj/
 out/
+publish/
+
+# Angular / Node (client)
+client/node_modules/
+client/.angular/
+client/dist/
+client/coverage/
+client/.sass-cache/
+client/.cache/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
 # User-specific files
 *.user
@@ -28,6 +41,10 @@ logs/
 *.nupkg
 *.snupkg
 packages/
+
+# Local app data (backend)
+api/users.txt
+api/users.local.txt
 
 # Rider / ReSharper
 .idea/
